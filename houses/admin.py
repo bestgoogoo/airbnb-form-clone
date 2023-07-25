@@ -4,4 +4,7 @@ from .models import House
 
 @admin.register(House)
 class HouseAdmin(admin.ModelAdmin):
-    pass
+
+    list_display = ("name", "price_per_night", "address", "pet_allowed")
+    list_filter = ("price_per_night", "address", "pet_allowed")
+    search_fields = ("address",)
