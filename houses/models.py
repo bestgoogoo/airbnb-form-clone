@@ -7,12 +7,19 @@ class House(models.Model):
 
     name = models.CharField(max_length=140)
     price_per_night = models.PositiveIntegerField(
-        verbose_name="Price", help_text="Enter Only Positive Numbers per Night")
+        verbose_name="Price", help_text="Enter Only Positive Numbers per Night"
+    )
     description = models.TextField()
     address = models.CharField(max_length=140)
     pets_allowed = models.BooleanField(
         verbose_name="Pets Allowed?",
-        default=True, help_text="Dose this house allow pets?")
+        default=True,
+        help_text="Dose this house allow pets?",
+    )
+    owner = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+    )
 
     def __str__(self):
         return self.name
