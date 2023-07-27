@@ -18,6 +18,7 @@ class ExperienceAdmin(admin.ModelAdmin):
         "end",
         "contents",
         "created_at",
+        "category",
     )
 
 
