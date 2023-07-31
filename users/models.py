@@ -15,11 +15,29 @@ class User(AbstractUser):
         KWR = ("kwr", "KWR")
         USD = ("usd", "USD")
 
-    first_name = models.CharField(max_length=150, editable=False)
-    last_name = models.CharField(max_length=150, editable=False)
+    first_name = models.CharField(
+        max_length=150,
+        editable=False,
+    )
+    last_name = models.CharField(
+        max_length=150,
+        editable=False,
+    )
     avatar = models.ImageField(blank=True)
-    name = models.CharField(max_length=150, default="")
+    name = models.CharField(
+        max_length=150,
+        default="",
+    )
     is_host = models.BooleanField(null=True)
-    gender = models.CharField(max_length=10, choices=GenderChoices.choices)
-    language = models.CharField(max_length=2, choices=LanguageChoices.choices)
-    currency = models.CharField(max_length=5, choices=CurrencyChoices.choices)
+    gender = models.CharField(
+        max_length=10,
+        choices=GenderChoices.choices,
+    )
+    language = models.CharField(
+        max_length=2,
+        choices=LanguageChoices.choices,
+    )
+    currency = models.CharField(
+        max_length=5,
+        choices=CurrencyChoices.choices,
+    )
