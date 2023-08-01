@@ -21,7 +21,7 @@ def categories(request):
             return Response(serializer.errors)
 
 
-@api_view(["GET", "POST", "DELETE"])
+@api_view(["GET", "PUT", "DELETE"])
 def category(request, pk):
     try:
         category = Category.objects.get(pk=pk)
@@ -31,7 +31,7 @@ def category(request, pk):
     if request.method == "GET":
         serializer = CategorySerializer(category)
         return Response(serializer.data)
-    elif request.method == "POST":
+    elif request.method == "PUT":
         serializer = CategorySerializer(
             category,
             data=request.data,
