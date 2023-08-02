@@ -49,4 +49,4 @@ class AmenityDetial(APIView):
     def delete(self, request, pk):
         amenity = self.get_object(pk)
         amenity.delete()
-        return Response(HTTP_204_NO_CONTENT)
+        return Response(status=HTTP_204_NO_CONTENT)
