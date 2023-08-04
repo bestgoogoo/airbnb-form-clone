@@ -1,4 +1,5 @@
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.exceptions import NotFound, PermissionDenied
@@ -6,6 +7,8 @@ from .models import Photo
 
 
 class PhotoDetial(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get_object(slef, pk):
         try:
             return Photo.objects.get(pk=pk)
