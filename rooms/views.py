@@ -7,7 +7,6 @@ from rest_framework.exceptions import (
     NotFound,
     NotAuthenticated,
     ParseError,
-    PermissionDenied,
 )
 from rest_framework.status import HTTP_204_NO_CONTENT
 from .serializers import (
