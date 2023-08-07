@@ -1,8 +1,10 @@
 from django.urls import path
-from .views import Contents, ContentDetail
+from . import views
 
 
 urlpatterns = [
-    path("contents/", Contents.as_view()),
-    path("contents/<int:pk>", ContentDetail.as_view()),
+    path("", views.Experiences.as_view()),
+    path("<int:pk>", views.ExperienceDetail.as_view()),
+    path("contents/", views.Contents.as_view()),
+    path("contents/<int:pk>", views.ContentDetail.as_view()),
 ]
