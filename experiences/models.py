@@ -40,6 +40,9 @@ class Experience(CommonModel):
     def __str__(self) -> str:
         return self.name
 
+    def total_contents(self):
+        return self.contents.count()
+
 
 class Content(CommonModel):
 

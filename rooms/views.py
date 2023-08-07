@@ -8,6 +8,7 @@ from rest_framework.exceptions import (
     NotFound,
     NotAuthenticated,
     ParseError,
+    PermissionDenied,
 )
 from rest_framework.status import HTTP_204_NO_CONTENT
 from .serializers import (
@@ -60,7 +61,10 @@ class Rooms(APIView):
                     for amenity_pk in amenities:
                         amenity = Amenity.objects.get(pk=amenity_pk)
                         room.amenities.add(amenity)
-                    serializer = RoomDetailSerializer(room)
+                    serializer = RoomDetailSerializer(
+                        room,
+                        context={"request": request},
+                    )
                     return Response(serializer.data)
             except Exception:
                 raise ParseError("Amenity not found")
@@ -112,7 +116,10 @@ class RoomDetail(APIView):
                     for amenity_pk in amenities:
                         amenity = Amenity.objects.get(pk=amenity_pk)
                         room.amenities.add(amenity)
-                    updated_room = RoomDetailSerializer(room)
+                    updated_room = RoomDetailSerializer(
+                        room,
+                        context={"request": request},
+                    )
                     return Response(updated_room.data)
             except Exception:
                 raise ParseError("Amenity not found")

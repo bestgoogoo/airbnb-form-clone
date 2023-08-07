@@ -16,16 +16,48 @@ from .serializers import (
 
 
 class Experiences(views.APIView):
-    def get(self, requset):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get(self, request):
         all_experiences = Experience.objects.all()
         serializer = ExperienceListSerializer(
             all_experiences,
             many=True,
+            context={"request": request},
         )
         return response.Response(serializer.data)
 
     def post(self, request):
-        pass
+        serializer = ExperienceDetailSerializer(data=request.data)
+        if serializer.is_valid():
+            category_pk = request.data.get("category")
+            if not category_pk:
+                raise exceptions.ParseError("Category is required")
+            try:
+                category = Category.objects.get(pk=category_pk)
+                if category.kind == Category.CategoryKindChoices.ROOMS:
+                    raise exceptions.ParseError("Category kind should be 'Experiences'")
+            except Category.DoesNotExist:
+                raise exceptions.ParseError("Category not found")
+            try:
+                with transaction.atomic():
+                    experience = serializer.save(
+                        host=request.user,
+                        category=category,
+                    )
+                    contents = request.data.get("contents")
+                    for content_pk in contents:
+                        content = Content.objects.get(pk=content_pk)
+                        experience.contents.add(content)
+                    serializer = ExperienceDetailSerializer(
+                        experience,
+                        context={"request": request},
+                    )
+                    return response.Response(serializer.data)
+            except Exception:
+                raise exceptions.ParseError("Content not found")
+        else:
+            return response.Response(serializer.errors)
 
 
 class ExperienceDetail(views.APIView):
@@ -39,7 +71,10 @@ class ExperienceDetail(views.APIView):
 
     def get(self, request, pk):
         experience = self.get_object(pk)
-        serializer = ExperienceDetailSerializer(experience)
+        serializer = ExperienceDetailSerializer(
+            experience,
+            context={"request": request},
+        )
         return response.Response(serializer.data)
 
     def put(self, request, pk):
@@ -60,7 +95,7 @@ class ExperienceDetail(views.APIView):
                 if category.kind == Category.CategoryKindChoices.ROOMS:
                     raise exceptions.ParseError("Category kind should be 'Experiences'")
             except Category.DoesNotExist:
-                raise exceptions.NotFound
+                raise exceptions.ParseError("Category not found")
             try:
                 with transaction.atomic():
                     experience = serializer.save(category=category)
@@ -69,9 +104,12 @@ class ExperienceDetail(views.APIView):
                     for content_pk in contents:
                         content = Content.objects.get(pk=content_pk)
                         experience.contents.add(content)
-                    updated_experience = ExperienceDetailSerializer(experience)
+                    updated_experience = ExperienceDetailSerializer(
+                        experience,
+                        context={"request": request},
+                    )
                     return response.Response(updated_experience.data)
-            except Exception:
+            except Content.DoesNotExist:
                 raise exceptions.ParseError("Content not found")
 
     def delete(self, request, pk):

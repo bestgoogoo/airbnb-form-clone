@@ -57,6 +57,7 @@ class RoomListSerializer(serializers.ModelSerializer):
             "rating",
             "is_owner",
             "photos",
+            "total_amenities",
         )
 
     def get_rating(self, room):
