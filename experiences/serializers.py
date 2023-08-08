@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from users.serializers import TinyUserSerializer
 from categories.serializers import CategorySerializer
+from medias.serializers import PhotoSerializer, VideoSerializer
 from .models import Experience, Content
 
 
@@ -13,6 +14,10 @@ class ContentSerializer(serializers.ModelSerializer):
 class ExperienceListSerializer(serializers.ModelSerializer):
     host = TinyUserSerializer(read_only=True)
     is_host = serializers.SerializerMethodField()
+    photos = PhotoSerializer(
+        read_only=True,
+        many=True,
+    )
 
     class Meta:
         model = Experience
@@ -22,6 +27,7 @@ class ExperienceListSerializer(serializers.ModelSerializer):
             "country",
             "city",
             "price",
+            "photos",
             "host",
             "is_host",
             "start",
@@ -41,6 +47,11 @@ class ExperienceDetailSerializer(serializers.ModelSerializer):
         read_only=True,
         many=True,
     )
+    photos = PhotoSerializer(
+        read_only=True,
+        many=True,
+    )
+    video = VideoSerializer(read_only=True)
     is_host = serializers.SerializerMethodField()
 
     class Meta:

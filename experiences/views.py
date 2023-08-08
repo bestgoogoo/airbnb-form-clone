@@ -7,6 +7,10 @@ from rest_framework import (
     permissions,
 )
 from categories.models import Category
+from medias.serializers import (
+    PhotoSerializer,
+    VideoSerializer,
+)
 from .models import Experience, Content
 from .serializers import (
     ExperienceDetailSerializer,
@@ -165,3 +169,49 @@ class ContentDetail(views.APIView):
         content = self.get_object(pk)
         content.delete()
         return response.Response(status=HTTP_204_NO_CONTENT)
+
+
+class ExperiencePhotos(views.APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_object(self, pk):
+        try:
+            return Experience.objects.get(pk=pk)
+        except Experience.DoesNotExist:
+            raise exceptions.NotFound
+
+    def post(self, request, pk):
+        experience = self.get_object(pk)
+        if request.user != experience.host:
+            raise exceptions.PermissionDenied
+
+        serializer = PhotoSerializer(data=request.data)
+        if serializer.is_valid():
+            photo = serializer.save(experience=experience)
+            serializer = PhotoSerializer(photo)
+            return response.Response(serializer.data)
+        else:
+            return response.Response(serializer.errors)
+
+
+class ExperienceVideo(views.APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_object(self, pk):
+        try:
+            return Experience.objects.get(pk=pk)
+        except Experience.DoesNotExist:
+            raise exceptions.NotFound
+
+    def post(self, request, pk):
+        experience = self.get_object(pk=pk)
+        if request.user != experience.host:
+            raise exceptions.PermissionDenied
+
+        serializer = VideoSerializer(data=request.data)
+        if serializer.is_valid():
+            video = serializer.save(experience=experience)
+            serializer = VideoSerializer(video)
+            return response.Response(serializer.data)
+        else:
+            return response.Response(serializer.errors)
