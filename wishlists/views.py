@@ -1,15 +1,18 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import NotFound
-from rest_framework.status import HTTP_200_OK
+from rest_framework import (
+    views,
+    response,
+    permissions,
+    exceptions,
+    status,
+)
 from rooms.models import Room
+from experiences.models import Experience
 from .models import Wishlist
 from .serializers import WishlistSerializer
 
 
-class Wishlists(APIView):
-    permission_classes = [IsAuthenticated]
+class Wishlists(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         all_wishlists = Wishlist.objects.filter(user=request.user)
@@ -18,7 +21,7 @@ class Wishlists(APIView):
             many=True,
             context={"request": request},
         )
-        return Response(serializer.data)
+        return response.Response(serializer.data)
 
     def post(self, request):
         serializer = WishlistSerializer(data=request.data)
@@ -26,19 +29,19 @@ class Wishlists(APIView):
         if serializer.is_valid():
             wishlist = serializer.save(user=request.user)
             serializer = WishlistSerializer(wishlist)
-            return Response(serializer.data)
+            return response.Response(serializer.data)
         else:
-            return Response(serializer.errors)
+            return response.Response(serializer.errors)
 
 
-class WishlistDetail(APIView):
-    permission_classes = [IsAuthenticated]
+class WishlistDetail(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self, pk, user):
         try:
             return Wishlist.objects.get(pk=pk, user=user)
         except Wishlist.DoesNotExist:
-            raise NotFound
+            raise exceptions.NotFound
 
     def get(self, request, pk):
         wishlist = self.get_object(pk, request.user)
@@ -46,7 +49,7 @@ class WishlistDetail(APIView):
             wishlist,
             context={"request": request},
         )
-        return Response(serializer.data)
+        return response.Response(serializer.data)
 
     def put(self, request, pk):
         wishlist = self.get_object(pk, request.user)
@@ -58,28 +61,28 @@ class WishlistDetail(APIView):
         if serializer.is_valid():
             wishlist = serializer.save()
             serializer = WishlistSerializer(wishlist)
-            return Response(serializer.data)
+            return response.Response(serializer.data)
         else:
-            return Response(serializer.errors)
+            return response.Response(serializer.errors)
 
     def delete(self, request, pk):
         wishlist = self.get_object(pk, request.user)
         wishlist.delete()
-        return Response(status=HTTP_200_OK)
+        return response.Response(status=status.HTTP_200_OK)
 
 
-class WishlistToggle(APIView):
+class WishlistRoom(views.APIView):
     def get_list(self, pk, user):
         try:
             return Wishlist.objects.get(pk=pk, user=user)
         except Wishlist.DoesNotExist:
-            raise NotFound
+            raise exceptions.NotFound
 
     def get_room(self, pk):
         try:
             return Room.objects.get(pk=pk)
         except Room.DoesNotExist:
-            raise NotFound
+            raise exceptions.NotFound
 
     def put(self, request, pk, room_pk):
         wishlist = self.get_list(pk, request.user)
@@ -88,4 +91,27 @@ class WishlistToggle(APIView):
             wishlist.rooms.remove(room)
         else:
             wishlist.rooms.add(room)
-        return Response(status=HTTP_200_OK)
+        return response.Response(status=status.HTTP_200_OK)
+
+
+class WishlistExperience(views.APIView):
+    def get_list(self, pk, user):
+        try:
+            return Wishlist.objects.get(pk=pk, user=user)
+        except Wishlist.DoesNotExist:
+            raise exceptions.NotFound
+
+    def get_experience(self, pk):
+        try:
+            return Experience.objects.get(pk=pk)
+        except Experience.DoesNotExist:
+            raise exceptions.NotFound
+
+    def put(self, request, pk, experience_pk):
+        wishlist = self.get_list(pk, request.user)
+        experience = self.get_experience(pk)
+        if wishlist.experience.filter(pk=experience.pk).exist():
+            wishlist.experience.remove(experience)
+        else:
+            wishlist.experience.add(experience)
+        return response.Response(status=status.HTTP_200_OK)
