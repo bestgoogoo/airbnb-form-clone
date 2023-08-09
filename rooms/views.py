@@ -10,7 +10,11 @@ from rest_framework.exceptions import (
     ParseError,
     PermissionDenied,
 )
-from rest_framework.status import HTTP_204_NO_CONTENT
+from rest_framework.status import (
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+)
 from .serializers import (
     AmenitySerializer,
     RoomListSerializer,
@@ -146,7 +150,7 @@ class Amenities(APIView):
             amenity = AmenitySerializer(serializer.save())
             return Response(amenity.data)
         else:
-            return Response(serializer.errors)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
 class AmenityDetial(APIView):
