@@ -1,5 +1,6 @@
 from rest_framework.test import APITestCase
 from . import models
+from users.models import User
 
 
 class TestAmenities(APITestCase):
@@ -118,3 +119,25 @@ class TestAmenity(APITestCase):
         response = self.client.delete(self.URL)
 
         self.assertEqual(response.status_code, 204)
+
+
+class TestRoomsPermission(APITestCase):
+    def setUp(self):
+        user = User.objects.create(username="test")
+        user.set_password("123")
+        user.save()
+        # self.user를 사용하므로 'class TestRooms()'안에 'def setUp()'밖에 user가 있는 것과 같이 함.
+        self.user = user
+
+    def test_create_room(self):
+        response = self.client.post("/api/v1/rooms/")
+
+        self.assertEqual(response.status_code, 403)
+        print(f"로그인 전: {response.json()}")
+
+        # 강제로 로그인 시킴.
+        self.client.force_login(self.user)
+
+        # 여기는 로그인 됐다는 것을 확인하기 위한 코드이므로 없어도 됨.
+        response = self.client.post("/api/v1/rooms/")
+        print(f"로그인 후: {response.json()}")
