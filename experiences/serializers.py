@@ -30,6 +30,7 @@ class ExperienceListSerializer(serializers.ModelSerializer):
             "photos",
             "host",
             "is_host",
+            "date",
             "start",
             "end",
             "total_contents",
@@ -61,3 +62,17 @@ class ExperienceDetailSerializer(serializers.ModelSerializer):
     def get_is_host(self, experience):
         request = self.context["request"]
         return experience.host == request.user
+
+
+class ExperienceTimeSerializer(serializers.ModelSerializer):
+    date = serializers.DateField()
+
+    class Meta:
+        model = Experience
+        fields = (
+            "pk",
+            "name",
+            "date",
+            "start",
+            "end",
+        )

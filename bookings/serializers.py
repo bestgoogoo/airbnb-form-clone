@@ -1,5 +1,6 @@
 from django.utils import timezone
 from rest_framework import serializers
+from experiences.serializers import ExperienceTimeSerializer
 from .models import Booking
 
 
@@ -43,5 +44,28 @@ class PublicRoomBookingSerializer(serializers.ModelSerializer):
             "pk",
             "check_in",
             "check_out",
+            "guests",
+        )
+
+
+class CreateExperienceBookingSerializer(serializers.ModelSerializer):
+    experience = ExperienceTimeSerializer(read_only=True)
+
+    class Meta:
+        model = Booking
+        fields = (
+            "experience",
+            "guests",
+        )
+
+
+class PublicExperienceBookingSerializer(serializers.ModelSerializer):
+    experience = ExperienceTimeSerializer(read_only=True)
+
+    class Meta:
+        model = Booking
+        fields = (
+            "pk",
+            "experience",
             "guests",
         )

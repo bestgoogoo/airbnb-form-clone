@@ -14,6 +14,7 @@ class ExperienceAdmin(admin.ModelAdmin):
         "city",
         "price",
         "host",
+        "date",
         "start",
         "end",
         "contents",

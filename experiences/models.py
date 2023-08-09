@@ -22,6 +22,7 @@ class Experience(CommonModel):
         related_name="experiences",
     )
     address = models.CharField(max_length=250)
+    date = models.DateField(null=True, blank=True)
     start = models.TimeField()
     end = models.TimeField()
     description = models.TextField()

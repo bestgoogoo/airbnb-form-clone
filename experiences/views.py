@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import transaction
+from django.utils import timezone
 from rest_framework import (
     views,
     response,
@@ -8,9 +9,14 @@ from rest_framework import (
     permissions,
 )
 from categories.models import Category
+from bookings.models import Booking
 from medias.serializers import (
     PhotoSerializer,
     VideoSerializer,
+)
+from bookings.serializers import (
+    PublicExperienceBookingSerializer,
+    CreateExperienceBookingSerializer,
 )
 from .models import Experience, Content
 from .serializers import (
@@ -234,6 +240,42 @@ class ExperienceVideo(views.APIView):
         if serializer.is_valid():
             video = serializer.save(experience=experience)
             serializer = VideoSerializer(video)
+            return response.Response(serializer.data)
+        else:
+            return response.Response(serializer.errors)
+
+
+class ExperienceBookings(views.APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_object(self, pk):
+        try:
+            return Experience.objects.get(pk=pk)
+        except Experience.DoesNotExist:
+            raise exceptions.NotFound
+
+    def get(self, request, pk):
+        experience = self.get_object(pk)
+        bookings = Booking.objects.filter(
+            experience=experience,
+            kind=Booking.BookingKindChoices.EXPERIENCE,
+        )
+        serializer = PublicExperienceBookingSerializer(bookings, many=True)
+        return response.Response(serializer.data)
+
+    def post(self, request, pk):
+        experience = self.get_object(pk)
+        now = timezone.localtime(timezone.now()).date()
+        serializer = CreateExperienceBookingSerializer(data=request.data)
+        if serializer.is_valid():
+            if experience.date <= now:
+                raise exceptions.ParseError("Past event cannot be booked")
+            booking = serializer.save(
+                experience=experience,
+                user=request.user,
+                kind=Booking.BookingKindChoices.EXPERIENCE,
+            )
+            serializer = PublicExperienceBookingSerializer(booking)
             return response.Response(serializer.data)
         else:
             return response.Response(serializer.errors)

@@ -11,7 +11,6 @@ class BookingAdmin(admin.ModelAdmin):
         "experience",
         "check_in",
         "check_out",
-        "experience_time",
         "guests",
     )
 
