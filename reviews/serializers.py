@@ -12,4 +12,5 @@ class ReviewSerializer(serializers.ModelSerializer):
             "user",
             "payload",
             "rating",
+            "created_at",
         )

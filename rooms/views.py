@@ -1,3 +1,4 @@
+import time
 from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
@@ -87,6 +88,7 @@ class RoomDetail(APIView):
 
     def get(self, request, pk):
         room = self.get_object(pk)
+        time.sleep(1)
         serializer = RoomDetailSerializer(
             room,
             context={"request": request},
