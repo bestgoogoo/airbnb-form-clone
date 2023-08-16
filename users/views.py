@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions, exceptions
 from . import serializers, models
+from users.models import User
 
 
 class Me(APIView):
@@ -125,25 +126,42 @@ class JWTLogIn(APIView):
 
 class GithubLogIn(APIView):
     def post(self, request):
-        code = request.data.get("code")
-        access_token = requests.get(
-            f"http://github.com/login/oauth/access_token?code={code}&client_id=72af9d41820cb7329816&client_secret={settings.GITHUB_SECRET}",
-            headers={"Accept": "application/json"},
-        )
-        access_token = access_token.json().get("access_token")
-        user_data = requests.get(
-            "http://api.github.com/user",
-            headers={
-                "Accept": "application/json",
-                "Authorization": "Bearer " + access_token,
-            },
-        ).json()
-        user_emails = requests.get(
-            "http://api.github.com/user/emails",
-            headers={
-                "Accept": "application/json",
-                "Authorization": "Bearer " + access_token,
-            },
-        ).json()
-        print(user_emails)
-        return Response()
+        try:
+            code = request.data.get("code")
+            access_token = requests.get(
+                f"http://github.com/login/oauth/access_token?code={code}&client_id=72af9d41820cb7329816&client_secret={settings.GITHUB_SECRET}",
+                headers={"Accept": "application/json"},
+            )
+            access_token = access_token.json().get("access_token")
+            user_data = requests.get(
+                "http://api.github.com/user",
+                headers={
+                    "Accept": "application/json",
+                    "Authorization": "Bearer " + access_token,
+                },
+            )
+            user_data = user_data.json()
+            user_emails = requests.get(
+                "http://api.github.com/user/emails",
+                headers={
+                    "Accept": "application/json",
+                    "Authorization": "Bearer " + access_token,
+                },
+            ).json()
+            try:
+                user = User.objects.get(email=user_emails[0]["email"])
+                auth.login(request, user)
+                return Response(status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                user = User.objects.create(
+                    username=user_data.get("login"),
+                    name=user_data.get("name"),
+                    avatar=user_data.get("avatar_url"),
+                    email=user_emails[0]["email"],
+                )
+                user.set_unusable_password()
+                user.save()
+                auth.login(request, user)
+                return Response(status=status.HTTP_200_OK)
+        except Exception:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
