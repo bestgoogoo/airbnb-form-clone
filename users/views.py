@@ -138,5 +138,12 @@ class GithubLogIn(APIView):
                 "Authorization": "Bearer " + access_token,
             },
         ).json()
-        print(user_data)
+        user_emails = requests.get(
+            "http://api.github.com/user/emails",
+            headers={
+                "Accept": "application/json",
+                "Authorization": "Bearer " + access_token,
+            },
+        ).json()
+        print(user_emails)
         return Response()
