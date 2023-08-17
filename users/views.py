@@ -128,19 +128,21 @@ class GithubLogIn(APIView):
     def post(self, request):
         try:
             code = request.data.get("code")
-            access_token = requests.get(
-                f"http://github.com/login/oauth/access_token?code={code}&client_id=72af9d41820cb7329816&client_secret={settings.GITHUB_SECRET}",
-                headers={"Accept": "application/json"},
+            access_token = (
+                requests.get(
+                    f"http://github.com/login/oauth/access_token?code={code}&client_id=72af9d41820cb7329816&client_secret={settings.GITHUB_SECRET}",
+                    headers={"Accept": "application/json"},
+                )
+                .json()
+                .get("access_token")
             )
-            access_token = access_token.json().get("access_token")
             user_data = requests.get(
                 "http://api.github.com/user",
                 headers={
                     "Accept": "application/json",
                     "Authorization": "Bearer " + access_token,
                 },
-            )
-            user_data = user_data.json()
+            ).json()
             user_emails = requests.get(
                 "http://api.github.com/user/emails",
                 headers={
@@ -164,4 +166,51 @@ class GithubLogIn(APIView):
                 auth.login(request, user)
                 return Response(status=status.HTTP_200_OK)
         except Exception:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class KakaoLogIn(APIView):
+    def post(self, request):
+        try:
+            code = request.data.get("code")
+            access_token = (
+                requests.post(
+                    "https://kauth.kakao.com/oauth/token",
+                    headers={"Content-Type": "application/x-www-form-urlencoded"},
+                    data={
+                        "grant_type": "authorization_code",
+                        "client_id": "d7fe98d70f4dac645708afc3086b987f",
+                        "reidrect_url": "http://127.0.0.1:3000/social/kakao",
+                        "code": code,
+                    },
+                )
+                .json()
+                .get("access_token")
+            )
+            user_data = requests.get(
+                "https://kapi.kakao.com/v2/user/me",
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Authorization": f"Bearer {access_token}",
+                },
+            ).json()
+            kakao_account = user_data.get("kakao_account")
+            profile = kakao_account.get("profile")
+            try:
+                user = User.objects.get(email=kakao_account.get("email"))
+                auth.login(request, user)
+                return Response(status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                user = User.objects.create(
+                    email=kakao_account.get("email"),
+                    name=profile.get("nickname"),
+                    username=profile.get("nickname"),
+                    avatar=profile.get("profile_image_url"),
+                )
+                user.set_unusable_password()
+                user.save()
+                auth.login(request, user)
+                return Response(status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
             return Response(status=status.HTTP_400_BAD_REQUEST)

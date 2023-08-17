@@ -11,6 +11,7 @@ urlpatterns = [
     path("token-login", obtain_auth_token),  # authToken login using username, password
     path("log-in", views.LogIn.as_view()),  # cookie login using username, password
     path("github", views.GithubLogIn.as_view()),
+    path("kakao", views.KakaoLogIn.as_view()),
     path("log-out", views.LogOut.as_view()),
     path("@<str:username>", views.PublicUser.as_view()),
 ]
