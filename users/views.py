@@ -219,7 +219,7 @@ class SignUp(APIView):
         serializer = serializers.SignUpUserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            user.set_password(request.data.get("password"))
+            user.set_password(password)
             serializer = serializers.SignUpUserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
