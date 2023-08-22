@@ -95,15 +95,10 @@ class LogIn(APIView):
             auth.login(request, user)
             return Response({"ok": "Done"})
         else:
-            return Response({"error": "Wrong password"})
-
-
-class LogOut(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request):
-        auth.logout(request)
-        return Response({"bye": "bye"})
+            return Response(
+                {"error": "Wrong password"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class JWTLogIn(APIView):
@@ -214,3 +209,26 @@ class KakaoLogIn(APIView):
         except Exception as e:
             print(e)
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class SignUp(APIView):
+    def post(self, request):
+        password = request.data.get("password")
+        if len(password) < 8:
+            raise Response({"error": "Password is longer than 8."})
+        serializer = serializers.SignUpUserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            user.set_password(request.data.get("password"))
+            serializer = serializers.SignUpUserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LogOut(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        auth.logout(request)
+        return Response({"bye": "bye"})

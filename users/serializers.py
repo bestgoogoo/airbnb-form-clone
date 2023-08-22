@@ -22,3 +22,9 @@ class PrivateUserSerializer(ModelSerializer):
             "groups",
             "user_permissions",
         )
+
+
+class SignUpUserSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("username", "name", "email", "password")
