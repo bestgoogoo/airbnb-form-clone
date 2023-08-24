@@ -91,9 +91,17 @@ class LogIn(APIView):
             username=username,
             password=password,
         )
+        try:
+            User.objects.get(username=username)
+            pass
+        except:
+            return Response(
+                {"error": "Username does not exist"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if user:
             auth.login(request, user)
-            return Response({"ok": "Done"})
+            return Response({"ok": "Welcome!😁"})
         else:
             return Response(
                 {"error": "Wrong password"},
