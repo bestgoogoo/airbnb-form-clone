@@ -27,4 +27,9 @@ class PrivateUserSerializer(ModelSerializer):
 class SignUpUserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ("username", "name", "email", "password")
+        fields = (
+            "username",
+            "name",
+            "email",
+            "password",
+        )

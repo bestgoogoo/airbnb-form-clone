@@ -221,17 +221,36 @@ class KakaoLogIn(APIView):
 
 class SignUp(APIView):
     def post(self, request):
-        password = request.data.get("password")
-        if len(password) < 8:
-            raise Response({"error": "Password is longer than 8."})
-        serializer = serializers.SignUpUserSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            user.set_password(password)
-            serializer = serializers.SignUpUserSerializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            User.objects.get(username=request.data.get("username"))
+            return Response(
+                {"usernameError": "Username exist."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except User.DoesNotExist:
+            password = request.data.get("password")
+            password_confirm = request.data.get("passwordConfirm")
+            if len(password) < 8:
+                return Response(
+                    {"passwordError": "Password is longer than 8."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if password != password_confirm:
+                return Response(
+                    {"passwordConfirmError": "Password does not match."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            serializer = serializers.SignUpUserSerializer(data=request.data)
+            if serializer.is_valid():
+                user = serializer.save()
+                user.set_password(password)
+                serializer = serializers.PrivateUserSerializer(user)
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LogOut(APIView):

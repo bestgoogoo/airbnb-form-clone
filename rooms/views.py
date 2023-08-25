@@ -146,7 +146,7 @@ class Amenities(APIView):
         serializers = AmenitySerializer(all_amenities, many=True)
         return Response(serializers.data)
 
-    def post(slef, request):
+    def post(self, request):
         serializer = AmenitySerializer(data=request.data)
         if serializer.is_valid():
             amenity = AmenitySerializer(serializer.save())
